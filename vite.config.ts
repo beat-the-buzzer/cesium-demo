@@ -7,5 +7,6 @@ const cesiumPlugin = cesium as unknown as () => Plugin
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [vue(), cesiumPlugin()],
 })
