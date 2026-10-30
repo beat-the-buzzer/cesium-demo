@@ -77,6 +77,7 @@ onMounted(() => {
     // sceneModePicker: false, // 关闭右上角地球场景切换按钮
   });
   viewer.value = currentViewer;
+  // currentViewer.scene.debugShowFramesPerSecond = true; // 展示fps
   (currentViewer.cesiumWidget.creditContainer as HTMLElement).style.display = "none"; // 底部logo 版权等信息隐藏
 
   // 添加一个实体（详见中文版 API：Entity、Cartesian3、Color）
@@ -153,14 +154,7 @@ onMounted(() => {
   });
 
   currentViewer.zoomTo(currentViewer.entities);
-
-
 });
-
-
-
-
-
 
 
 
