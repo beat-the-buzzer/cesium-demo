@@ -19,6 +19,9 @@
 
 import { onMounted, shallowRef } from 'vue';
 import * as Cesium from 'cesium';
+import * as satellite from 'satellite.js';
+
+window.Cesium = Cesium; // 将 Cesium 挂载到全局，方便调试
 
 let myPoint: Cesium.Entity | undefined;
 const viewer = shallowRef<Cesium.Viewer | null>(null);
@@ -64,7 +67,27 @@ function jumpToSpecifiedPosition() {
 onMounted(() => {
   // console.log(Cesium)
   // Cesium.Ion.defaultAccessToken = 'YOUR_TOKEN_HERE';
+
   const currentViewer = new Cesium.Viewer('cesiumContainer', {
+    // baseLayerPicker: false,
+    // baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+    //   Cesium.TileMapServiceImageryProvider.fromUrl(
+    //     Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII')
+    //   )
+    // ),
+
+    // TS报错
+    // baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+    //   new Cesium.TileCoordinatesImageryProvider()
+    // ),
+
+    // TS报错
+    // baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+    //   new Cesium.OpenStreetMapImageryProvider({
+    //     url: "https://a.tile.openstreetmap.org/",
+    //   }),
+    // )
+
     // terrain: Cesium.Terrain.fromWorldTerrain(), // 使用全球地形
     // baseLayer: Cesium.ImageryLayer.fromWorldImagery({}), // 使用全球影像
     // animation: false,       // 关闭底部动画控件
@@ -76,7 +99,9 @@ onMounted(() => {
     // navigationHelpButton: false, // 关闭右上角问号帮助按钮
     // sceneModePicker: false, // 关闭右上角地球场景切换按钮
   });
+
   viewer.value = currentViewer;
+  window.viewer = currentViewer; // 将 Cesium Viewer 实例挂载到全局，方便调试
   // currentViewer.scene.debugShowFramesPerSecond = true; // 展示fps
   (currentViewer.cesiumWidget.creditContainer as HTMLElement).style.display = "none"; // 底部logo 版权等信息隐藏
 
@@ -142,7 +167,7 @@ onMounted(() => {
       outlineColor: Cesium.Color.BLACK,
       outlineWidth: 1,
     },
-
+    label: { text: '卫星一号', font: '12pt sans-serif', pixelOffset: new Cesium.Cartesian2(0, -24) },
     path: {
       show: true,
       width: 2,
@@ -153,7 +178,99 @@ onMounted(() => {
     },
   });
 
-  currentViewer.zoomTo(currentViewer.entities);
+  // currentViewer.zoomTo(currentViewer.entities);
+
+  // czml point
+  const czml = [
+    {
+      id: "document",
+      name: "CZML Position Definitions",
+      version: "1.0",
+    },
+    {
+      id: "point1",
+      name: "point in cartographic degrees",
+      position: {
+        cartographicDegrees: [-111.0, 40.0, 150000.0],
+      },
+      point: {
+        color: {
+          rgba: [100, 0, 200, 255],
+        },
+        outlineColor: {
+          rgba: [200, 0, 200, 255],
+        },
+        pixelSize: {
+          number: 10,
+        },
+      },
+      label: { text: '测试点1', font: '12pt sans-serif' },
+
+    },
+    {
+      id: "point2",
+      name: "point in cartesian coordinates",
+      position: {
+        cartesian: [1216469.9357990976, -4736121.71856379, 4081386.8856866374],
+      },
+      point: {
+        color: {
+          rgba: [0, 100, 200, 255],
+        },
+        outlineColor: {
+          rgba: [200, 0, 200, 255],
+        },
+        pixelSize: {
+          number: 10,
+        },
+      },
+      label: { text: '测试点2', font: '12pt sans-serif' },
+
+    },
+    {
+      id: "point 3",
+      name: "point in cartographic radians",
+      position: {
+        cartographicRadians: [Math.PI, (3 * Math.PI) / 4, 150000],
+      },
+      point: {
+        color: {
+          rgba: [10, 200, 10, 255],
+        },
+        outlineColor: {
+          rgba: [200, 0, 200, 255],
+        },
+        pixelSize: {
+          number: 10,
+        },
+      },
+      label: {
+        fillColor: {
+          rgba: [255, 255, 255, 255],
+        },
+        font: "13pt Lucida Console",
+        horizontalOrigin: "LEFT",
+        outlineColor: {
+          rgba: [150, 0, 150, 255],
+        },
+        outlineWidth: 3,
+        pixelOffset: {
+          cartesian2: [20, 0],
+        },
+        style: "FILL_AND_OUTLINE",
+        text: "测试点3",
+      },
+    },
+  ];
+
+  currentViewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
+
+  currentViewer.dataSources.add(
+    Cesium.CzmlDataSource.load("/simple.czml"),
+  );
+
+  currentViewer.camera.flyHome(0);
+  // 从TLE文件生成卫星轨道数据 
 });
 
 
